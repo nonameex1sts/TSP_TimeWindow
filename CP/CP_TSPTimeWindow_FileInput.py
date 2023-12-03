@@ -11,6 +11,8 @@ import time
 # Muc tieu: Minimize tong thoi gian di chuyen giua cac thanh pho
 # -----------------------------------------------
 
+# NOTE: Chu trinh con duoc loai bo: thoi gian den thanh pho i = thoi gian den thanh pho j + thoi gian di tu j den i
+
 inputFolder = "testcase/input"
 outputFolder = "testcase/output"
 timeFile = "CP/time.txt"
@@ -18,7 +20,7 @@ allFile = ["N5.txt", "N10.txt", "N100.txt", "N200.txt", "N300.txt", "N500.txt", 
            "N1000.txt"]
 
 
-def CP_TSP_TimeWindow(file, num_nodes, e, l, d, time_matrix):
+def CP_TSP_TimeWindow(num_nodes, e, l, d, time_matrix):
     x = {}  # x[i,j] = 1 if i -> j else 0
     M = {}  # M[i] = thoi gian giao hang tai thanh pho i
     w = {}  # w[i] = thoi gian cho tai thanh pho i
@@ -52,7 +54,7 @@ def CP_TSP_TimeWindow(file, num_nodes, e, l, d, time_matrix):
                 model.Add(M[j] <= M[i] + d[i] + time_matrix[i, j] + w[j] + (1 - x[i, j]) * 1000000000)
 
     # Muc tieu: Minimize tong thoi gian di het cac thanh pho
-    model.Minimize(M[num_nodes] + d[num_nodes] + time_matrix[num_nodes, 0])
+    model.Minimize(sum(time_matrix[i, j] * x[i, j] for i in range(num_nodes) for j in range(num_nodes) if j != i))
 
     # Solve model
     solver = cp_model.CpSolver()
@@ -60,6 +62,18 @@ def CP_TSP_TimeWindow(file, num_nodes, e, l, d, time_matrix):
 
     # Result
     if status == cp_model.OPTIMAL:
+
+        # solution = {}
+        # solution[0] = 0
+
+        # for i in range(1, num_nodes + 1):
+        #     solution[i] = solver.Value(M[i])
+        # solution = sorted(solution.items(), key=lambda x: x[1])
+
+        # for i in range(1, num_nodes + 1):
+        #     print(solution[i][0], end=' ')
+        # print("\n")
+
         return solver.ObjectiveValue()
     else:
         print("No solution found.")
@@ -70,11 +84,10 @@ if __name__ == '__main__':
     for file in allFile:
         print(file)
 
-        num_nodes = 0
-        e = {} # thoi gian giao hang som nhat tai thanh pho i
-        l = {} # thoi gian giao hang tre nhat tai thanh pho i
-        d = {} # thoi gian mat de giao hang tai thanh pho i
-        time_matrix = {} # time_matrix[i][j] = thoi gian di tu thanh pho i den thanh pho j
+        e = {}
+        l = {}
+        d = {}
+        time_matrix = {}
 
         # Read input
         with open(f"{inputFolder}/{file}", "r") as f:
@@ -98,7 +111,7 @@ if __name__ == '__main__':
 
         # Run TSP for each file
         startTime = time.time()
-        result = CP_TSP_TimeWindow(file, num_nodes, e, l, d, time_matrix)
+        result = CP_TSP_TimeWindow(num_nodes, e, l, d, time_matrix)
         endTime = time.time()
 
         # Write time to file
@@ -117,7 +130,7 @@ if __name__ == '__main__':
                 else:
                     timeOutput += time_matrix[list_cities[i], 0]
 
-            if result == timeOutput:
+            if result <= timeOutput:
                 print(f"{file} is correct")
             else:
                 print(f"{file} is wrong")

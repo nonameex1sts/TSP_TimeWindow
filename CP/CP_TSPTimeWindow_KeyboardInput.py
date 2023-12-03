@@ -10,6 +10,7 @@ from ortools.sat.python import cp_model
 # Muc tieu: Minimize tong thoi gian di chuyen giua cac thanh pho
 # -----------------------------------------------
 
+# NOTE: Chu trinh con duoc loai bo: thoi gian den thanh pho i = thoi gian den thanh pho j + thoi gian di tu j den i
 
 e = {}  # thoi gian som nhat de den thanh pho i
 l = {}  # thoi gian tre nhat de den thanh pho i
