@@ -20,8 +20,6 @@ for i in range(8):
 
 for i in range(8):
     model.Add(sum(X[i][j] for j in range(8)) == 1)
-
-for i in range(8):
     model.Add(sum(X[j][i] for j in range(8)) == 1)
 
 for (x, y) in E:
